@@ -20,11 +20,26 @@ export const useApi = () => {
             }
             
             const newChartData: chart.DataPoint[] = dataForColumn(entries, 2)
-                .map((entry: api.Entry) => ({'date': entry.content.$t}));
+                .map((entry: api.Entry) => ({
+                    'date': entry.content.$t,
+                    base: 1, 
+                    derivative: 1,
+                }));
 
             dataForColumn(entries, 3).forEach((entry: api.Entry, i: number) => 
-                newChartData[i].value = parseFloat(entry.content.$t.replace(',', '.'))
+                newChartData[i].derivative = parseFloat(entry.content.$t.replace(',', '.'))
             );
+
+            dataForColumn(entries, 5).forEach((entry: api.Entry, i: number) =>
+                newChartData[i].base = parseFloat(entry.content.$t.replace(',', '.'))
+            );
+            
+            if (newChartData.length > 0) {
+                const multiplier = newChartData[0].derivative / newChartData[0].base;
+                for (const dataPoint of newChartData) {
+                    dataPoint.base *= multiplier;
+                }
+            }
 
             setChartData(newChartData);
         }
